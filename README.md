@@ -1,5 +1,5 @@
 # Tinkershell
-A command line utility to remotely execute code on deployed Laravel instances through a SSH connection.
+A command line utility to **remotely execute code on deployed Laravel instances through a SSH connection**.
 Inspired by [Tinkerwell](https://tinkerwell.app/) and motivated by Electron's clunkiness.
 
 ``` text
