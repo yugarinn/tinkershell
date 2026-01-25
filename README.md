@@ -10,7 +10,7 @@ environments, end user discretion is advised.
 ## Installation
 
 ``` shell
-curl -sSL https://raw.githubusercontent.com/yourusername/tinkershell/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/yugarinn/tinkershell/main/install.sh | bash
 ```
 
 ## Configuration
