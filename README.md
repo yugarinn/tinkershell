@@ -9,6 +9,10 @@ environments, end user discretion is advised.
 
 ## Installation
 
+``` shell
+curl -sSL https://raw.githubusercontent.com/yourusername/tinkershell/main/install.sh | bash
+```
+
 ## Configuration
 Tinkershell expects a [toml](https://toml.io/en/) config file to exists in `~/.config/tinkershell/tinkershell.toml`. The config file organizes connection environments under different sections, each section represents a single, unique connection. All connection sections must include four fields:
 
@@ -44,19 +48,19 @@ All `tinkershell` executions are assigned a pseudo-unique ID that is used in two
 **Example**
 
 ``` shell
--> ~ cat ./helloFromTinkershell.php
+$ cat ./helloFromTinkershell.php
 
 dump('Hello from Tinkershell!');
 dump(config('app.name'))
 
--> cat ~/.config/tinkershell/tinkershell.toml
+$ cat ~/.config/tinkershell/tinkershell.toml
 [staging]
 ip_address = "129.11.98.32"
 ssh_username = "yugarinn"
 ssh_public_key = "~/.ssh/id_rsa"
 project_path = "/home/yugarinn/laravel-app/"
 
--> tinkershell -e staging -f ./helloFromTinkershell.php
+$ tinkershell -e staging -f ./helloFromTinkershell.php
 => [Tinkershell INFO] running process 'MTc2OTM2MjgxMzc4OA==' [PID: 3565347]...
 Hello from Tinkershell!
 My Laravel App
