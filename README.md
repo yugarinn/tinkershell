@@ -67,3 +67,6 @@ My Laravel App
 => [Tinkershell INFO] running process 'MTc2OTM2MjgxMzc4OA==' [PID: 3565347]... done
 ```
 
+
+## Logs
+By default, Tinkershell stores logs under `~/.config/tinkershell/logs/`.
