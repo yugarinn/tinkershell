@@ -23,6 +23,8 @@ Tinkershell expects a [toml](https://toml.io/en/) config file to exists in `~/.c
 - `ssh_public_key`: The path to the SSH public key to be used.
 - `project_path`: The root path of the Laravel project in the remote server.
 
+Only public/private keys SSH authentication is supported.
+
 **Example**
 ``` toml
 [production]
