@@ -11,20 +11,20 @@ Inspired by [Tinkerwell](https://tinkerwell.app/) and motivated by Electron's cl
 
 ## Usage
 ``` shell
-tinkershell production -f processPendingPayments.php
+tinkershell -e production -f processPendingPayments.php
 ```
 
 ## Configuration
 ``` toml
 [production]
-ip_address=34.12.123.12
-ssh_username=yugarinn
-ssh_public_key=~/.ssh/id_rsa
-project_path=/home/yugarinn/laravel-app/
+ip_address = "34.12.123.12"
+ssh_username = "yugarinn"
+ssh_public_key = "~/.ssh/id_rsa"
+project_path = "/home/yugarinn/laravel-app/"
 
 [staging]
-ip_address=129.11.98.32
-ssh_username=yugarinn
-ssh_public_key=~/.ssh/id_rsa
-project_path=/home/yugarinn/laravel-app/
+ip_address = "129.11.98.32"
+ssh_username = "yugarinn"
+ssh_public_key = "~/.ssh/id_rsa"
+project_path = "/home/yugarinn/laravel-app/"
 ```
