@@ -10,7 +10,7 @@ environments, end user discretion is advised.
 ## Installation
 
 ## Configuration
-Tinkershell expects a [toml](https://toml.io/en/) config file to exists in `~/.config/tinkershell/tinkershell.toml`. The config file organizes connection environments under different sections. All connection environments must include four fields:
+Tinkershell expects a [toml](https://toml.io/en/) config file to exists in `~/.config/tinkershell/tinkershell.toml`. The config file organizes connection environments under different sections, each section represents a single, unique connection. All connection sections must include four fields:
 
 - `ip_address`: The ipv4 address of the remote server.
 - `ssh_username`: The username to be used in the SSH connection.

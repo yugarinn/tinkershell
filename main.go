@@ -14,11 +14,19 @@ import (
 	"time"
 )
 
+const VERSION = "v0.0.1"
+
 func main() {
 	envName := flag.String("e", "", "The environment to run against (e.g., production, staging)")
 	filePath := flag.String("f", "", "The path to the PHP file to execute")
+	showVersion := flag.Bool("version", false, "Show the current version of tinkershell")
 
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("tinkershell version %s\n", VERSION)
+		os.Exit(0)
+	}
 
 	if *envName == "" || *filePath == "" {
 		fmt.Println("Usage: tinkershell -e <environment> -f <file.php>")
