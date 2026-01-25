@@ -40,3 +40,26 @@ tinkershell -e production -f processPendingPayments.php
 ```
 
 All `tinkershell` executions are assigned a pseudo-unique ID that is used in two files, the default remote server log file and a local log file under `~/.config/tinkershell/logs/`.
+
+**Example**
+
+``` shell
+-> ~ cat ./helloFromTinkershell.php
+
+dump('Hello from Tinkershell!');
+dump(config('app.name'))
+
+-> cat ~/.config/tinkershell/tinkershell.toml
+[staging]
+ip_address = "129.11.98.32"
+ssh_username = "yugarinn"
+ssh_public_key = "~/.ssh/id_rsa"
+project_path = "/home/yugarinn/laravel-app/"
+
+-> tinkershell -e staging -f ./helloFromTinkershell.php
+=> [Tinkershell INFO] running process 'MTc2OTM2MjgxMzc4OA==' [PID: 3565347]...
+Hello from Tinkershell!
+My Laravel App
+=> [Tinkershell INFO] running process 'MTc2OTM2MjgxMzc4OA==' [PID: 3565347]... done
+```
+
