@@ -4,7 +4,7 @@ Inspired by [Tinkerwell](https://tinkerwell.app/) and motivated by Electron's cl
 
 ``` text
 ⚠️ This is in early alpha testing and should not be used in production
-environments, end user discretion is advised.
+   environments, end user discretion is advised.
 ```
 
 ## Installation
