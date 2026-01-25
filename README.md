@@ -7,6 +7,8 @@ Inspired by [Tinkerwell](https://tinkerwell.app/) and motivated by Electron's cl
    environments, end user discretion is advised.
 ```
 
+Tinkershell has only been tested against Laravel 10.x version and will most likely have issues with older or newer versions. PRs are welcome.
+
 ## Installation
 
 ``` shell
