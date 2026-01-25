@@ -23,7 +23,7 @@ if [ -z "$LATEST_RELEASE" ]; then
     exit 1
 fi
 
-FILENAME="${BINARY_NAME}-${OS}-${ARCH}"
+FILENAME="${BINARY_NAME}-${LATEST_RELEASE}-${OS}-${ARCH}"
 URL="https://github.com/$REPO/releases/download/$LATEST_RELEASE/$FILENAME"
 
 echo "=> Downloading $BINARY_NAME $LATEST_RELEASE for $OS/$ARCH..."
