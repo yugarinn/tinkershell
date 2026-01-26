@@ -120,6 +120,17 @@ if (!defined('STDIN')) define('STDIN', fopen('php://stdin', 'w'));
 
 $executionId = '%s';
 
+if (!class_exists('Tinkershell')) {
+    final class Tinkershell
+    {
+        public static function log(string $log): void
+        {
+            echo $log . "\n";
+            Log::info($log);
+        }
+    }
+}
+
 require '%s/vendor/autoload.php';
 
 $app = require_once '%s/bootstrap/app.php';
@@ -145,25 +156,18 @@ $shell = new \Psy\Shell($config);
 $shell->setScopeVariables(['app' => $app]);
 $shell->setOutput($output);
 
-$log = function(string $line): void
-{
-    $prefix = '=> ';
-
-    echo $prefix . $line . "\n";
-    Log::info($prefix . $line);
-};
-
 \Illuminate\Foundation\AliasLoader::getInstance($app->make('config')->get('app.aliases'))->register();
 
 if (class_exists(\Laravel\Tinker\ClassAliasAutoloader::class)) {
     $classMapPath = '%s/vendor/composer/autoload_classmap.php';
+
     if (file_exists($classMapPath)) {
         \Laravel\Tinker\ClassAliasAutoloader::register($shell, $classMapPath);
     }
 }
 
 $pid = getmypid();
-$log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pid}]...");
+Tinkershell::log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pid}]...");
 
 try {
     $shell->execute(<<<'TINKERSHELL'
@@ -172,12 +176,12 @@ TINKERSHELL
     );
 } catch (\Throwable $e) {
     fwrite(STDERR, "Execution Error: " . $e->getMessage() . PHP_EOL);
-	$log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pid}]... done");
+	Tinkershell::log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pid}]... done");
 
     exit(1);
 }
 
-$log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pid}]... done");
+Tinkershell::log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pid}]... done");
 
 `, executionID, laravelProjectPath, laravelProjectPath, laravelProjectPath, userCode)
 }
