@@ -73,4 +73,14 @@ My Laravel App
 
 
 ## Logs
+A helper class `Tinkershell` is defined, which includes a `log` method that can be used to dump information to both the terminal and the log files.
+
+``` php
+$drivers = Drivers::get();
+
+foreach ($drivers as $driver) {
+    Tinkershell::log($driver->name);
+}
+```
+
 By default, Tinkershell stores logs under `~/.config/tinkershell/logs/`.
