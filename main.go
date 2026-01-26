@@ -123,8 +123,10 @@ $executionId = '%s';
 if (!class_exists('Tinkershell')) {
     final class Tinkershell
     {
-        public static function log(string $log): void
+        public static function log(mixed $log = null): void
         {
+            $log = (string) $log;
+
             echo $log . "\n";
             Log::info($log);
         }
