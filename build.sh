@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BINARY_NAME="tinkershell"
-VERSION="v0.0.3"
+VERSION="v0.0.4"
 
 PLATFORMS=("darwin/amd64" "darwin/arm64" "linux/amd64" "windows/amd64")
 

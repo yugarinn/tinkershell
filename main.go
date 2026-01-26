@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-const VERSION = "v0.0.3"
+const VERSION = "v0.0.4"
 
 func main() {
 	envName := flag.String("e", "", "The environment to run against (e.g., production, staging)")
