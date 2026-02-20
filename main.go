@@ -45,11 +45,10 @@ func main() {
 		}
 	}
 
-	hostElements := []string{connectionConfig["ssh_username"], connectionConfig["ip_address"]}
-	host := strings.Join(hostElements, "@")
-
+	host := fmt.Sprintf("%s@%s", connectionConfig["ssh_username"], connectionConfig["ip_address"])
 	executionID := generateExecutionID()
-	run(executionID, host, connectionConfig["project_path"], *filePath)
+
+	run(executionID, host, connectionConfig["ssh_public_key"], connectionConfig["project_path"], *filePath)
 }
 
 func generateExecutionID() string {
@@ -188,7 +187,7 @@ Tinkershell::log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pi
 `, executionID, laravelProjectPath, laravelProjectPath, laravelProjectPath, userCode)
 }
 
-func run(executionID string, host string, projectPath string, localFile string) {
+func run(executionID string, host string, publicKeyPath string, projectPath string, localFile string) {
 	home, _ := os.UserHomeDir()
 	logDir := filepath.Join(home, ".config", "tinkershell", "logs")
 
@@ -203,7 +202,7 @@ func run(executionID string, host string, projectPath string, localFile string) 
 
 	userCode, _ := os.ReadFile(localFile)
 	payload := prepare(executionID, string(userCode), projectPath)
-	cmd := exec.Command("ssh", "-t", "-q", host, "php")
+	cmd := exec.Command("ssh", "-t", "-q", host, "-i", publicKeyPath, "php")
 
 	writer := io.MultiWriter(os.Stdout, logFile)
 
