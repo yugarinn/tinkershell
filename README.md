@@ -76,10 +76,10 @@ My Laravel App
 A helper class `Tinkershell` is defined, which includes a `log` method that can be used to dump information to both the terminal and the log files.
 
 ``` php
-$drivers = Drivers::get();
+$users = User::get();
 
-foreach ($drivers as $driver) {
-    Tinkershell::log($driver->name);
+foreach ($users as $user) {
+    Tinkershell::log($user->name);
 }
 ```
 
