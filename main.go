@@ -201,7 +201,8 @@ func run(executionID string, host string, publicKeyPath string, projectPath stri
 	defer logFile.Close()
 
 	userCode, _ := os.ReadFile(localFile)
-	payload := prepare(executionID, string(userCode), projectPath)
+	payload := prepare(executionID, stripPHPOpeningTag(string(userCode)), projectPath)	
+
 	cmd := exec.Command("ssh", "-t", "-q", host, "-i", publicKeyPath, "php")
 
 	writer := io.MultiWriter(os.Stdout, logFile)
@@ -219,4 +220,10 @@ func generateLogFilename(executionID string) string {
 	timestamp := time.Now().Format("20060102-150405")
 
 	return fmt.Sprintf("%s-%s.log", timestamp, executionID)
+}
+
+func stripPHPOpeningTag(code string) string {
+	code = strings.TrimSpace(code)
+	code = strings.TrimPrefix(code, "<?php")
+	return strings.TrimSpace(code)
 }
