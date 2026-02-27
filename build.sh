@@ -20,5 +20,5 @@ for platform in "${PLATFORMS[@]}"; do
     export GOOS=$GOOS
     export GOARCH=$GOARCH
 
-    go build -o bin/$OUTPUT_NAME main.go
+    go build -ldflags="-s -w" -o bin/$OUTPUT_NAME main.go
 done
