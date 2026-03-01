@@ -15,6 +15,8 @@ Tinkershell has only been tested against Laravel 10.x version and will most like
 curl -sSL https://raw.githubusercontent.com/yugarinn/tinkershell/main/install.sh | bash
 ```
 
+Note that on Windows, [git bash](https://git-scm.com/install/windows) is required.
+
 ## Configuration
 Tinkershell expects a [toml](https://toml.io/en/) config file to exists in `~/.config/tinkershell/tinkershell.toml`. The config file organizes connection environments under different sections, each section represents a single, unique connection. All connection sections must include four fields:
 
