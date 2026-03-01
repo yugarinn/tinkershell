@@ -39,15 +39,32 @@ chmod +x "$TMP_BIN"
 
 FINAL_DEST="$INSTALL_DIR/$BINARY_NAME$EXT"
 
-if command -v sudo >/dev/null 2>&1 && [ "$OS" != "windows" ]; then
-    echo "=> Moving binary to $INSTALL_DIR (requires sudo)..."
-    sudo mv "$TMP_BIN" "$FINAL_DEST"
-else
-    echo "=> Moving binary to $INSTALL_DIR..."
-    mv "$TMP_BIN" "$FINAL_DEST"
+IS_WINDOWS=false
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OS" == "Windows_NT" ]]; then
+    IS_WINDOWS=true
 fi
 
-if [[ "$OS" == "windows" ]]; then
+if [ "$IS_WINDOWS" = true ]; then
+    INSTALL_DIR="${LOCALAPPDATA:-$HOME/AppData/Local}/tinkershell/bin"
+    FINAL_DEST="$INSTALL_DIR/tinkershell.exe"
+
+    echo "=> Windows detected. Installing to user directory..."
+    mkdir -p "$INSTALL_DIR"
+    mv "$TMP_BIN" "$FINAL_DEST"
+    
+    echo "=> Installed to $FINAL_DEST"
+    echo "=> Please, ensure $INSTALL_DIR is in your Windows PATH"
+else
+    if command -v sudo >/dev/null 2>&1; then
+        echo "=> Moving binary to $INSTALL_DIR (requires sudo)..."
+        sudo mv "$TMP_BIN" "$FINAL_DEST"
+    else
+        echo "=> Moving binary to $INSTALL_DIR..."
+        mv "$TMP_BIN" "$FINAL_DEST"
+    fi
+fi
+
+if [ "$IS_WINDOWS" = true ]; then
     CONF_DIR="$(cygpath -u "$APPDATA")/tinkershell"
 else
     CONF_DIR="$HOME/.config/tinkershell"
