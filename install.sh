@@ -45,21 +45,29 @@ if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OS" == "Windows_NT" ]]; 
 fi
 
 if [ "$IS_WINDOWS" = true ]; then
+    if command -v cygpath >/dev/null 2>&1; then
+        WIN_INSTALL_DIR=$(cygpath -w "$LOCALAPPDATA/tinkershell/bin")
+    else
+        WIN_INSTALL_DIR=$(echo "$LOCALAPPDATA/tinkershell/bin" | sed 's/\//\\/g' | sed 's/^\\c/C:/')
+    fi
+
     INSTALL_DIR="${LOCALAPPDATA:-$HOME/AppData/Local}/tinkershell/bin"
     FINAL_DEST="$INSTALL_DIR/tinkershell.exe"
 
-    echo "=> Installing to user directory..."
+    echo "=> Installing to: $WIN_INSTALL_DIR"
     mkdir -p "$INSTALL_DIR"
+    
+    rm -f "$FINAL_DEST" 
     mv "$TMP_BIN" "$FINAL_DEST"
+    chmod +x "$FINAL_DEST"
 
-    WIN_PATH=$(echo "$INSTALL_DIR" | sed 's/\//\\/g' | sed 's/^\\c/C:/')
-
-    if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
-        setx PATH "%PATH%;$WIN_PATH" > /dev/null
+    if ! echo "$PATH" | grep -iq "$INSTALL_DIR"; then
+        echo "=> Adding to User PATH..."
+        powershell.exe -Command "[Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';$WIN_INSTALL_DIR', 'User')"
     fi
     
-    echo "=> Installed to $FINAL_DEST"
-    echo "=> Please restart your terminal for changes to take effect"
+    echo "=> Installed successfully."
+    echo "=> IMPORTANT: Restart your terminal or 'source ~/.bashrc' if using Git Bash."
 else
     if command -v sudo >/dev/null 2>&1; then
         echo "=> Moving binary to $INSTALL_DIR (requires sudo)..."
