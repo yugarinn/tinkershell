@@ -67,12 +67,12 @@ func generateExecutionID() string {
 }
 
 func loadConfig() map[string]map[string]string {
-	home, err := os.UserHomeDir()
+	configDir, err := os.UserConfigDir()
 	if err != nil {
 		panic(err)
 	}
 
-	configPath := filepath.Join(home, ".config", "tinkershell", "tinkershell.toml")
+	configPath := filepath.Join(configDir, "tinkershell", "tinkershell.toml")
 	configFile, err := os.Open(configPath)
 	if err != nil {
 		panic(err)
@@ -144,8 +144,8 @@ func prepare(executionID string, silentMode *bool, userCode string, laravelProje
 }
 
 func run(executionID string, host string, silentMode *bool, publicKeyPath string, projectPath string, localFile string) {
-	home, _ := os.UserHomeDir()
-	logDir := filepath.Join(home, ".config", "tinkershell", "logs")
+	configDir, _ := os.UserConfigDir()
+	logDir := filepath.Join(configDir, "tinkershell", "logs")
 
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		fmt.Printf("Warning: Could not create log directory: %v\n", err)
