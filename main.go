@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-const VERSION = "v0.0.6"
+const VERSION = "v0.0.7"
 
 //go:embed tinkershell.php
 var tinkershellTemplate string
