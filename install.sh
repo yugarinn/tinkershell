@@ -48,12 +48,18 @@ if [ "$IS_WINDOWS" = true ]; then
     INSTALL_DIR="${LOCALAPPDATA:-$HOME/AppData/Local}/tinkershell/bin"
     FINAL_DEST="$INSTALL_DIR/tinkershell.exe"
 
-    echo "=> Windows detected. Installing to user directory..."
+    echo "=> Installing to user directory..."
     mkdir -p "$INSTALL_DIR"
     mv "$TMP_BIN" "$FINAL_DEST"
+
+    WIN_PATH=$(echo "$INSTALL_DIR" | sed 's/\//\\/g' | sed 's/^\\c/C:/')
+
+    if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
+        setx PATH "%PATH%;$WIN_PATH" > /dev/null
+    fi
     
     echo "=> Installed to $FINAL_DEST"
-    echo "=> Please, ensure $INSTALL_DIR is in your Windows PATH"
+    echo "=> Please restart your terminal for changes to take effect"
 else
     if command -v sudo >/dev/null 2>&1; then
         echo "=> Moving binary to $INSTALL_DIR (requires sudo)..."
