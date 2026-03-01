@@ -49,6 +49,9 @@ tinkershell -e production -f processPendingPayments.php
 
 All `tinkershell` executions are assigned a pseudo-unique ID that is used in two files, the default remote server log file and a local log file under `~/.config/tinkershell/logs/`.
 
+**Silent run**
+A third, optional, flag `-s` can be provided to make `tinkershell` run silently. When this flag is provided, all output and logging are suppressed.
+
 **Example**
 
 ``` shell

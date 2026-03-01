@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	_ "embed"
 	"encoding/base64"
 	"flag"
 	"fmt"
@@ -11,14 +13,19 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 )
 
 const VERSION = "v0.0.6"
 
+//go:embed tinkershell.php
+var tinkershellTemplate string
+
 func main() {
 	envName := flag.String("e", "", "The environment to run against (e.g., production, staging)")
 	filePath := flag.String("f", "", "The path to the PHP file to execute")
+	silentMode := flag.Bool("s", false, "Disables all output and logging")
 	showVersion := flag.Bool("version", false, "Show the current version of tinkershell")
 
 	flag.Parse()
@@ -29,7 +36,7 @@ func main() {
 	}
 
 	if *envName == "" || *filePath == "" {
-		fmt.Println("Usage: tinkershell -e <environment> -f <file.php>")
+		fmt.Println("Usage: tinkershell [-s] -e <environment> -f <file.php>")
 		flag.PrintDefaults()
 
 		os.Exit(1)
@@ -48,7 +55,7 @@ func main() {
 	host := fmt.Sprintf("%s@%s", connectionConfig["ssh_username"], connectionConfig["ip_address"])
 	executionID := generateExecutionID()
 
-	run(executionID, host, connectionConfig["ssh_public_key"], connectionConfig["project_path"], *filePath)
+	run(executionID, host, silentMode, connectionConfig["ssh_public_key"], connectionConfig["project_path"], *filePath)
 }
 
 func generateExecutionID() string {
@@ -110,84 +117,33 @@ func loadConfig() map[string]map[string]string {
 	return config
 }
 
-func prepare(executionID string, userCode string, laravelProjectPath string) string {
-	return fmt.Sprintf(`<?php
+func prepare(executionID string, silentMode *bool, userCode string, laravelProjectPath string) (string, error) {
+	tmpl, err := template.New("php").Parse(tinkershellTemplate)
+	if err != nil {
+		return "", err
+	}
 
-if (!defined('STDOUT')) define('STDOUT', fopen('php://stdout', 'w'));
-if (!defined('STDERR')) define('STDERR', fopen('php://stderr', 'w'));
-if (!defined('STDIN')) define('STDIN', fopen('php://stdin', 'w'));
+	variables := struct {
+		ExecutionID string
+		SilentMode  *bool
+		UserCode    string
+		LaravelPath string
+	}{
+		ExecutionID: executionID,
+		SilentMode:  silentMode,
+		UserCode:    userCode,
+		LaravelPath: laravelProjectPath,
+	}
 
-$executionId = '%s';
+	var phpScript bytes.Buffer
+	if err := tmpl.Execute(&phpScript, variables); err != nil {
+		return "", err
+	}
 
-if (!class_exists('Tinkershell')) {
-    final class Tinkershell
-    {
-        public static function log(mixed $log = null): void
-        {
-            $log = (string) $log;
-
-            echo $log . "\n";
-            Log::info($log);
-        }
-    }
+	return phpScript.String(), nil
 }
 
-require '%s/vendor/autoload.php';
-
-$app = require_once '%s/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-$kernel->bootstrap();
-
-\Symfony\Component\VarDumper\VarDumper::setHandler(function ($var) {
-    $dumper = new \Symfony\Component\VarDumper\Dumper\CliDumper(STDOUT, null, \Symfony\Component\VarDumper\Dumper\CliDumper::DUMP_LIGHT_ARRAY);
-
-    $dumper->setDisplayOptions(['display_source' => false]);
-    $dumper->dump((new \Symfony\Component\VarDumper\Cloner\VarCloner())->cloneVar($var));
-});
-
-$config = new \Psy\Configuration([
-    'updateCheck' => 'never',
-    'usePcntl'    => false,
-    'configFile'  => null,
-]);
-
-$output = new \Psy\Output\ShellOutput();
-$shell = new \Psy\Shell($config);
-
-$shell->setScopeVariables(['app' => $app]);
-$shell->setOutput($output);
-
-\Illuminate\Foundation\AliasLoader::getInstance($app->make('config')->get('app.aliases'))->register();
-
-if (class_exists(\Laravel\Tinker\ClassAliasAutoloader::class)) {
-    $classMapPath = '%s/vendor/composer/autoload_classmap.php';
-
-    if (file_exists($classMapPath)) {
-        \Laravel\Tinker\ClassAliasAutoloader::register($shell, $classMapPath);
-    }
-}
-
-$pid = getmypid();
-Tinkershell::log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pid}]...");
-
-try {
-    $shell->execute(<<<'TINKERSHELL'
-%s
-TINKERSHELL
-    );
-} catch (\Throwable $e) {
-    fwrite(STDERR, "Execution Error: " . $e->getMessage() . PHP_EOL);
-	Tinkershell::log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pid}]... done");
-
-    exit(1);
-}
-
-Tinkershell::log("[Tinkershell INFO] running process '{$executionId}' [PID: {$pid}]... done");
-
-`, executionID, laravelProjectPath, laravelProjectPath, laravelProjectPath, userCode)
-}
-
-func run(executionID string, host string, publicKeyPath string, projectPath string, localFile string) {
+func run(executionID string, host string, silentMode *bool, publicKeyPath string, projectPath string, localFile string) {
 	home, _ := os.UserHomeDir()
 	logDir := filepath.Join(home, ".config", "tinkershell", "logs")
 
@@ -201,15 +157,20 @@ func run(executionID string, host string, publicKeyPath string, projectPath stri
 	defer logFile.Close()
 
 	userCode, _ := os.ReadFile(localFile)
-	payload := prepare(executionID, stripPHPOpeningTag(string(userCode)), projectPath)	
+	payload, err := prepare(executionID, silentMode, stripPHPOpeningTag(string(userCode)), projectPath)
+	if err != nil {
+		panic(fmt.Sprintf("error while preparing script for execution: '%s'", err.Error()))
+	}
 
 	cmd := exec.Command("ssh", "-t", "-q", host, "-i", publicKeyPath, "php")
 
-	writer := io.MultiWriter(os.Stdout, logFile)
-
 	cmd.Stdin = strings.NewReader(payload)
-	cmd.Stdout = writer
-	cmd.Stderr = writer
+
+	if !*silentMode {
+		writer := io.MultiWriter(os.Stdout, logFile)
+		cmd.Stdout = writer
+		cmd.Stderr = writer
+	}
 
 	if err := cmd.Run(); err != nil {
 		fmt.Printf("Remote execution failed: %v\n", err)
