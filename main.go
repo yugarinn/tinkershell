@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -17,7 +18,7 @@ import (
 	"time"
 )
 
-const VERSION = "v0.0.8"
+const VERSION = "v0.0.9"
 
 //go:embed tinkershell.php
 var tinkershellTemplate string
@@ -147,6 +148,9 @@ func run(executionID string, host string, silentMode *bool, publicKeyPath string
 	configDir, _ := os.UserConfigDir()
 	logDir := filepath.Join(configDir, "tinkershell", "logs")
 
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt)
+
 	if err := os.MkdirAll(logDir, 0755); err != nil {
 		fmt.Printf("Warning: Could not create log directory: %v\n", err)
 	}
@@ -162,8 +166,8 @@ func run(executionID string, host string, silentMode *bool, publicKeyPath string
 		panic(fmt.Sprintf("error while preparing script for execution: '%s'", err.Error()))
 	}
 
-	cmd := exec.Command("ssh", "-t", "-q", host, "-i", publicKeyPath, "php")
-
+	remoteCmd := fmt.Sprintf("exec -a %s php", executionID)
+	cmd := exec.Command("ssh", "-t", "-q", host, "-i", publicKeyPath, remoteCmd)
 	cmd.Stdin = strings.NewReader(payload)
 
 	if !*silentMode {
@@ -172,8 +176,28 @@ func run(executionID string, host string, silentMode *bool, publicKeyPath string
 		cmd.Stderr = writer
 	}
 
-	if err := cmd.Run(); err != nil {
-		fmt.Printf("Remote execution failed: %v\n", err)
+	if err := cmd.Start(); err != nil {
+		fmt.Printf("failed to start: %v\n", err)
+		return
+	}
+
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	select {
+	case <-sigChan:
+		fmt.Printf("\nkilling remote process (%s)...\n", executionID)
+		cmd.Process.Kill()
+
+		killCmd := exec.Command("ssh", "-q", host, "-i", publicKeyPath, fmt.Sprintf("pkill -f %s", executionID))
+		killCmd.Run()
+
+	case err := <-done:
+		if err != nil && !*silentMode {
+			fmt.Printf("remote execution finished with error: %v\n", err)
+		}
 	}
 }
 
